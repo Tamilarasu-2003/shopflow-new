@@ -24,6 +24,6 @@ app.use("/user/cart", cartRoute);
 app.use("/user/wishlist", wishlistRoute);
 app.use('/user/order', orderRoutes);
 
-app.listen(5001, () => {
+app.listen(5000, () => {
   console.log("backend running successfully....");
 });
