@@ -108,7 +108,9 @@ const login = async (req, res) => {
 
 const oAuth = async (req, res) => {
   try {
-    const { id, name, email, image } = req.body;
+    const { id, name, email, image, ...data } = req.body;
+    console.log("req.body : ",req.body);
+    
     let user = await userModel.findUserByGoogleId(id);
     if (!user) {
       const randomPassword = await passwordServices.generateRandomPassword();
@@ -126,7 +128,7 @@ const oAuth = async (req, res) => {
 
     const existingUser = await userModel.findUserByEmail(email);
 
-    let token = await jwtToken.createToken({
+    let token = await authServices.createToken({
       id: existingUser.id,
       name: existingUser.name,
       email: existingUser.email,
