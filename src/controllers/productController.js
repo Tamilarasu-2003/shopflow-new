@@ -44,7 +44,7 @@ const getAllProducts = async (req, res) => {
     const totalProducts = await productModel.getTotalProducts();
     const totalPages = Math.ceil(totalProducts / limitInt);
 
-    const allProducts = await productModel.getPaginatedProducts(offset, limit);
+    const allProducts = await productModel.getPaginatedProducts(offset, limitInt);
 
     sendResponse(res, {
       status: 200,

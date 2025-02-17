@@ -76,6 +76,8 @@ const createOrder = async (req, res) => {
 
 const createPaymentIntent = async (req, res) => {
   try {
+    console.log("createPaymentIntent started... ");
+    
     const { totalAmount, currency = "usd" } = req.body;
     const userId = req.user.id;
 
@@ -84,6 +86,9 @@ const createPaymentIntent = async (req, res) => {
       totalAmount,
       currency
     );
+
+    console.log(" paymentData : ",paymentData);
+
 
     sendResponse(res, {
       status: 200,
@@ -161,7 +166,7 @@ const confirmPayment = async (req, res) => {
       const order = await orderModel.getOrderById(orderId);
       console.log("confirmPayment step 4");
 
-      const user = await userModel.findUserById(userId);
+      const user = await userModel.findUserById(order.userId);
       
       await emailService.orderUpdateEmail(user.email, order, "Placed");
 
@@ -544,6 +549,8 @@ const cancelOrder = async (req, res) => {
 const getOrderByOrderId = async (req, res) => {
   try {
     const { orderId } = req.query;
+    console.log("getOrderByOrderId....");
+    
 
     // const order = await prisma.order.findUnique({
     //   where: { id: parseInt(orderId) },

@@ -10,7 +10,7 @@ const processPaymentIntent = async (userId, totalAmount, currency) => {
   );
 
   return {
-    paymentIntentSecret: paymentIntent.client_secret,
+    paymentIntent: paymentIntent.client_secret,
     paymentIntentId: paymentIntent.id,
     ephemeralKey: ephemeralKey.secret,
     customer: customer.id,
