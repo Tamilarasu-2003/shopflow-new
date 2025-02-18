@@ -21,16 +21,6 @@ const createOrder = async (userId, orderItems, totalAmount) => {
   });
 };
 
-// const updateOrderedItems = async (orderId) => {
-//   return await prisma.orderedItem.updateMany({
-//     where: { orderId: parseInt(orderId) },
-//     data: {
-//       paymentStatus: "COMPLETED",
-//       orderStatus: "CONFIRMED",
-//     },
-//   });
-// };
-
 const updateOrderStatus = async (orderId) => {
   return await prisma.order.update({
     where: { id: parseInt(orderId) },
@@ -125,6 +115,12 @@ const cancelOrderById = async (orderId) => {
   }
 };
 
+const cancelProductInOrder = async (orderId, productId) => {
+  return await prisma.orderedItem.deleteMany({
+    where: { orderId, productId },
+  });
+}
+
 const getOrderByOrderId = async (orderId) => {
   return await prisma.order.findUnique({
     where: { id: parseInt(orderId) },
@@ -170,7 +166,7 @@ const getOrderForCheckoutById = async (orderId) => {
 
 module.exports = {
   createOrder,
-  // updateOrderedItems,
+  
   updateOrderStatus,
   getOrderById,
 updateOrderPayment,
@@ -179,6 +175,7 @@ getOrderWithItems,
 markOrderAsFailed,
 getConfirmedUserOrders,
 cancelOrderById,
+cancelProductInOrder,
 getOrderByOrderId,
 getSimilarProducts,
 getOrderForCheckoutById

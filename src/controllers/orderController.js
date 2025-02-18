@@ -457,31 +457,6 @@ const getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // const orders = await prisma.order.findMany({
-    //   where: {
-    //     userId: parseInt(userId),
-    //     items: {
-    //       some: {
-    //         orderStatus: "CONFIRMED",
-    //       },
-    //     },
-    //   },
-    //   include: {
-    //     items: {
-    //       where: {
-    //         orderStatus: "CONFIRMED",
-    //       },
-    //       select: {
-    //         id: true,
-    //         product: true,
-    //         quantity: true,
-    //         price: true,
-    //         orderStatus: true,
-    //       },
-    //     },
-    //   },
-    // });
-
     const orders = await orderModel.getConfirmedUserOrders(userId);
 
 
@@ -518,15 +493,20 @@ const getUserOrders = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
   try {
-    const { orderId } = req.query;
+    let { orderId, productId } = req.query;
+    orderId = parseInt(orderId);
+    productId = parseInt(productId);
+    console.log(orderId, productId);
+    
 
-    // const updatedOrder = await prisma.orderedItem.update({
-    //   where: { id: parseInt(orderId) },
-    //   data: { orderStatus: "CANCELLED" },
-    // });
+    let updatedOrder
+    if(productId){
+      updatedOrder = await orderModel.cancelProductInOrder(orderId, productId);
+    }else{
+      updatedOrder = await orderModel.cancelOrderById(orderId);
+    }
 
-    const updatedOrder = await orderModel.cancelOrderById(orderId);
-
+    
 
     res.status(200).json({
       success: true,
@@ -550,12 +530,6 @@ const getOrderByOrderId = async (req, res) => {
   try {
     const { orderId } = req.query;
     console.log("getOrderByOrderId....");
-    
-
-    // const order = await prisma.order.findUnique({
-    //   where: { id: parseInt(orderId) },
-    //   include: { items: { include: { product: true } } },
-    // });
 
     const order = await orderModel.getOrderByOrderId(orderId);
 
@@ -567,24 +541,6 @@ const getOrderByOrderId = async (req, res) => {
     const date = new Date(order.orderDate).toISOString().split("T")[0];
     const subCategoryId = order.items[0].product.subCategoryId;
     const productId = order.items[0].product.id;
-
-    // const similarProducts = await prisma.product.findMany({
-    //   where: {
-    //     subCategoryId: parseInt(subCategoryId),
-    //     id: { not: parseInt(productId) },
-    //   },
-    //   select: {
-    //     id: true,
-    //     name: true,
-    //     image: true,
-    //     description: true,
-    //     actualPrice: true,
-    //     offerPrice: true,
-    //     discountPercentage: true,
-    //     subCategoryId: true,
-    //     rating: true,
-    //   },
-    // });
 
     const similarProducts = await orderModel.getSimilarProducts(subCategoryId, productId);
 
