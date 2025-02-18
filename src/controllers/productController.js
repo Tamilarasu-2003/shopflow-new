@@ -167,7 +167,9 @@ const getFilteredProducts = async (req, res) => {
 };
 
 const searchProducts = async (req, res) => {
-  const { query, page = 1, limit = 12 } = req.query;
+  const { query, page = 1, limit = 10 } = req.query;
+  console.log(req.query);
+  
   const offset = (page - 1) * limit;
 
   if (!query) {
@@ -181,13 +183,15 @@ const searchProducts = async (req, res) => {
 
   try {
     const { data, totalCount } = await elasticSearch(query, offset, limit);
+    console.log("totalCount : ",totalCount);
+    const totalPages = Math.ceil(totalCount / limit);
 
     sendResponse(res, {
       status: 200,
       type: "success",
       message: "Search result fetched.",
       data: data,
-      totalCount: totalCount,
+      totalPages: totalPages,
     });
   } catch (error) {
     console.error("Error fetching products from Elasticsearch:", error);

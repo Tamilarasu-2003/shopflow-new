@@ -28,6 +28,9 @@ const client = new Client({
 const elasticSearch = async (query, offset, limit) => {
   if (!query) { throw new Error("Search query is required"); }
 
+  const from = offset;
+  const size = limit;
+
   let priceFilter = {};
 
   const underMatch = query.match(/under\s(\d+)/i);
@@ -56,6 +59,8 @@ const elasticSearch = async (query, offset, limit) => {
   const body = await client.search({
     index: "products",
     body: {
+      from: from,
+      size: size,
       query: {
         bool: {
           must: [
