@@ -163,10 +163,16 @@ const getOrderForCheckoutById = async (orderId) => {
   });
 };
 
+const getOrderItemCount = async (orderId) => {
+  return prisma.orderedItem.count({
+    where:{orderId: orderId},
+  })
+}
+
 
 module.exports = {
   createOrder,
-  
+  getOrderItemCount,
   updateOrderStatus,
   getOrderById,
 updateOrderPayment,

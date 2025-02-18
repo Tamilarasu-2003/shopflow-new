@@ -47,8 +47,6 @@ const createOrder = async (req, res) => {
           productId: item.productId,
           quantity: item.quantity,
           price: product.offerPrice,
-          // orderStatus: "PENDING",
-          // paymentStatus: "PENDING",
         };
       })
     );
@@ -496,10 +494,12 @@ const cancelOrder = async (req, res) => {
     let { orderId, productId } = req.query;
     orderId = parseInt(orderId);
     productId = parseInt(productId);
+
+    const orderItemCount = await orderModel.getOrderItemCount(orderId);
     
     
     let updatedOrder
-    if(productId){
+    if(productId && orderItemCount>1){
       updatedOrder = await orderModel.cancelProductInOrder(orderId, productId);
     }else{
       updatedOrder = await orderModel.cancelOrderById(orderId);
@@ -532,6 +532,7 @@ const getOrderByOrderId = async (req, res) => {
     console.log("getOrderByOrderId....");
 
     const order = await orderModel.getOrderByOrderId(orderId);
+
 
 
     if (!order) {
