@@ -496,16 +496,16 @@ const cancelOrder = async (req, res) => {
     let { orderId, productId } = req.query;
     orderId = parseInt(orderId);
     productId = parseInt(productId);
-    console.log(orderId, productId);
     
-
+    
     let updatedOrder
     if(productId){
       updatedOrder = await orderModel.cancelProductInOrder(orderId, productId);
     }else{
       updatedOrder = await orderModel.cancelOrderById(orderId);
     }
-
+    
+    console.log("updatedOrder : ",updatedOrder);
     
 
     res.status(200).json({

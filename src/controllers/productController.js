@@ -44,7 +44,10 @@ const getAllProducts = async (req, res) => {
     const totalProducts = await productModel.getTotalProducts();
     const totalPages = Math.ceil(totalProducts / limitInt);
 
-    const allProducts = await productModel.getPaginatedProducts(offset, limitInt);
+    const allProducts = await productModel.getPaginatedProducts(
+      offset,
+      limitInt
+    );
 
     sendResponse(res, {
       status: 200,
@@ -133,12 +136,14 @@ const getFilteredProducts = async (req, res) => {
       filter.subCategory = { name: { in: subCategories } };
     }
 
-    const products = await productModel.getFilteredProducts(
+    const { products, totalCount } = await productModel.getFilteredProducts(
       filter,
       sort,
       offset,
       limitInt
     );
+
+    console.log("totalCount : ", totalCount);
 
     if (!products.length) {
       return sendResponse(res, {
@@ -149,12 +154,15 @@ const getFilteredProducts = async (req, res) => {
       });
     }
 
+    const totalPages = Math.ceil(totalCount / limitInt);
+
     sendResponse(res, {
       status: 200,
       type: "success",
       message: "Success",
       data: products,
       length: products.length,
+      totalPages: totalPages,
     });
   } catch (error) {
     sendResponse(res, {
@@ -169,7 +177,7 @@ const getFilteredProducts = async (req, res) => {
 const searchProducts = async (req, res) => {
   const { query, page = 1, limit = 10 } = req.query;
   console.log(req.query);
-  
+
   const offset = (page - 1) * limit;
 
   if (!query) {
@@ -183,7 +191,14 @@ const searchProducts = async (req, res) => {
 
   try {
     const { data, totalCount } = await elasticSearch(query, offset, limit);
-    console.log("totalCount : ",totalCount);
+    if (!data.length) {
+      return sendResponse(res, {
+        status: 404,
+        type: "error",
+        message: "products not found for this query.",
+      });
+    }
+    console.log("totalCount : ", totalCount);
     const totalPages = Math.ceil(totalCount / limit);
 
     sendResponse(res, {
@@ -303,7 +318,9 @@ const getProductsBySubCategory = async (req, res) => {
         message: "Invalid or missing subCategoryId.",
       });
     }
-    const Products = await productModel.fetchProductsBySubCategory(subCategoryId);
+    const Products = await productModel.fetchProductsBySubCategory(
+      subCategoryId
+    );
 
     if (!Products) {
       return sendResponse(res, {
@@ -452,7 +469,8 @@ const getTopRatedProducts = async (req, res) => {
 
 const getClearanceSaleProducts = async (req, res) => {
   try {
-    const clearanceSaleProducts = await productModel.fetchClearanceSaleProducts();
+    const clearanceSaleProducts =
+      await productModel.fetchClearanceSaleProducts();
 
     if (!clearanceSaleProducts || clearanceSaleProducts.length === 0) {
       return sendResponse(res, {

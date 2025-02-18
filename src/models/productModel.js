@@ -41,16 +41,25 @@ const getCategorySubCategories = async (categoryName) => {
 };
 
 const getFilteredProducts = async (filter, sort, offset, limitInt) => {
-  return await prisma.product.findMany({
-    skip: offset,
-    take: limitInt,
-    where: filter,
-    orderBy: sort
-      ? { actualPrice: sort === "low to high" ? "asc" : "desc" }
-      : undefined,
-    include: { subCategory: true },
-  });
+  const [products, totalCount] = await Promise.all([
+    prisma.product.findMany({
+      skip: offset,
+      take: limitInt,
+      where: filter,
+      orderBy: sort
+        ? { actualPrice: sort === "low to high" ? "asc" : "desc" }
+        : undefined,
+      include: { subCategory: true },
+    }),
+    prisma.product.count({ where: filter }),
+  ]);
+
+  return {
+    products,
+    totalCount,
+  };
 };
+
 
 const fetchCategories = async () => {
   return await prisma.category.findMany({
