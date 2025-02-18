@@ -556,6 +556,7 @@ const getOrderByOrderId = async (req, res) => {
         paymentStatus: order.paymentStatus,
         totalAmount: order.totalAmount,
         product: order.items,
+        item: order.items,
         similarProducts: similarProducts,
       },
     });
