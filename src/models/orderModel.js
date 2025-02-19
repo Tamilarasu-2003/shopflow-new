@@ -106,6 +106,10 @@ const getConfirmedUserOrders = async (userId) => {
 
 const cancelOrderById = async (orderId) => {
   try {
+    await prisma.orderedItem.deleteMany({
+      where: { orderId },
+    });
+
     return await prisma.order.update({
       where: { id: parseInt(orderId) },
       data: { orderStatus: "CANCELLED" },
@@ -115,7 +119,11 @@ const cancelOrderById = async (orderId) => {
   }
 };
 
-const cancelProductInOrder = async (orderId, productId) => {
+const cancelProductInOrder = async (orderId, productId, amount, totalAmount) => {
+  await prisma.order.update({
+    where:{id:orderId},
+    data:{totalAmount:Math.floor(totalAmount-amount)}
+  })
   return await prisma.orderedItem.deleteMany({
     where: { orderId, productId },
   });

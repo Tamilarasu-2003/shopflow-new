@@ -41,7 +41,7 @@ const createOrder = async (req, res) => {
         const product = await productModel.fetchProductById(item.productId);
         if (!product)
           throw new Error(`Product with ID ${item.productId} not found.`);
-        totalAmount += product.offerPrice * item.quantity;
+        totalAmount += Math.floor(product.offerPrice * item.quantity);
 
         return {
           productId: item.productId,
@@ -51,7 +51,9 @@ const createOrder = async (req, res) => {
       })
     );
 
-    totalAmount = parseFloat(totalAmount).toFixed(2)
+    totalAmount = totalAmount;
+    console.log("totalAmount : ",totalAmount);
+    
 
     const orderData = await orderModel.createOrder(userId, orderItems, totalAmount);
 
@@ -456,21 +458,31 @@ const getUserOrders = async (req, res) => {
     const userId = req.user.id;
 
     const orders = await orderModel.getConfirmedUserOrders(userId);
+    console.log("orders : ",orders);
 
+    if(!orders){
+      return sendresponse(res, {
+        status:404,
+        type:"error",
+        message:"no orders found..."
+      })
+    }
 
     const data = orders.map((order) => ({
+      orderId:orders[0].id,
       orderDate: new Date(order.createdAt).toISOString().split("T")[0],
       total: order.totalAmount,
       items: order.items.map((item) => ({
         orderId: order.id,
-        status: item.orderStatus,
         quantity: item.quantity,
         productName: item.product.name,
         productId: item.product.id,
         offerPrice: item.product.offerPrice,
+        totalProductAmount:item.quantity*item.product.offerPrice,
         image: item.product.image,
       })),
     }));
+    console.log(" data: ",data[0]?.items)
 
     sendResponse(res, {
       status: 200,
@@ -491,7 +503,7 @@ const getUserOrders = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
   try {
-    let { orderId, productId } = req.query;
+    let { orderId, productId, amount, totalAmount } = req.query;
     orderId = parseInt(orderId);
     productId = parseInt(productId);
 
@@ -499,9 +511,13 @@ const cancelOrder = async (req, res) => {
     
     
     let updatedOrder
-    if(productId && orderItemCount>1){
-      updatedOrder = await orderModel.cancelProductInOrder(orderId, productId);
+    if(productId ){
+      updatedOrder = await orderModel.cancelProductInOrder(orderId, productId, amount, totalAmount);
     }else{
+      updatedOrder = await orderModel.cancelOrderById(orderId);
+    }
+
+    if(orderItemCount<=1){
       updatedOrder = await orderModel.cancelOrderById(orderId);
     }
     
@@ -540,10 +556,13 @@ const getOrderByOrderId = async (req, res) => {
     }
     console.log("order : ", order);
     const date = new Date(order.orderDate).toISOString().split("T")[0];
-    const subCategoryId = order.items[0].product.subCategoryId;
-    const productId = order.items[0].product.id;
+    const subCategoryId = order.items[0]?.product.subCategoryId;
+    const productId = order.items[0]?.product.id;
 
-    const similarProducts = await orderModel.getSimilarProducts(subCategoryId, productId);
+    if(subCategoryId && productId){
+      var similarProducts = await orderModel.getSimilarProducts(subCategoryId, productId);
+    }
+
 
 
     sendResponse(res, {
