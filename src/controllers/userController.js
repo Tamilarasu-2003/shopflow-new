@@ -193,8 +193,11 @@ const googleCallback = (req, res, next) => {
         email: existingUser.email,
       });
 
-      res.cookie("shopflow_session", JSON.stringify({token}), {
-        maxAge: 7 * 24 * 60 * 60 * 1000, 
+      res.cookie("shopflow_session", JSON.stringify({ token }), {
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        // httpOnly: true,
+        secure: true,
+        sameSite: "None",
       });
 
       return res.redirect(`${process.env.FRONTEND_URL}`);
