@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+const passport = require("passport");
 const passwordServices = require("../services/passwordServices");
 const authServices = require("../services/authServices");
 const userModel = require("../models/userModel");
@@ -109,8 +110,8 @@ const login = async (req, res) => {
 const oAuth = async (req, res) => {
   try {
     const { id, name, email, image, ...data } = req.body;
-    console.log("req.body : ",req.body);
-    
+    console.log("req.body : ", req.body);
+
     let user = await userModel.findUserByGoogleId(id);
     if (!user) {
       const randomPassword = await passwordServices.generateRandomPassword();
@@ -154,6 +155,57 @@ const oAuth = async (req, res) => {
   }
 };
 
+const googleLogin = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+const googleCallback = (req, res, next) => {
+  passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login` }, async (err, user) => {
+    if (err || !user) {
+      console.log("Google Authentication Failed:", err);
+      return res.redirect(`${process.env.FRONTEND_URL}/login`);
+    }
+
+    try {
+      const userData = user._json;
+      console.log("Authenticated User Data:", userData);
+
+      let existingUser = await userModel.findUserByGoogleId(userData.sub);
+      if (!existingUser) {
+        const randomPassword = await passwordServices.generateRandomPassword();
+        const hashedPassword = await passwordServices.hashPassword(randomPassword);
+
+        existingUser = await userModel.createUser({
+          googleId: userData.sub,
+          email: userData.email,
+          name: userData.name,
+          profilePicture: userData.picture,
+          password: hashedPassword,
+        });
+      }
+
+      existingUser = await userModel.findUserByEmail(existingUser.email);
+      console.log("Existing User:", existingUser);
+
+      const token = await authServices.createToken({
+        id: existingUser.id,
+        name: existingUser.name,
+        email: existingUser.email,
+      });
+
+      res.cookie("shopflow_session", JSON.stringify({token}), {
+        maxAge: 7 * 24 * 60 * 60 * 1000, 
+      });
+
+      return res.redirect(`${process.env.FRONTEND_URL}`);
+    } catch (error) {
+      console.error("Error Handling Google OAuth:", error);
+      return res.redirect(`${process.env.FRONTEND_URL}/login`);
+    }
+  })(req, res, next);
+};
+
+
 const userProfileInfo = async (req, res) => {
   const userId = req.user.id;
 
@@ -193,8 +245,6 @@ const updateUserProfile = async (req, res) => {
     const data = req.body;
     const userId = req.user.id;
 
-    // console.log(image,data);
-
     const { name, phone } = data;
 
     const user = await userModel.findUserById(userId);
@@ -224,7 +274,6 @@ const updateUserProfile = async (req, res) => {
       var imageUrl = await s3util.uploadToS3(image, fileName);
       console.log("imageUrl : ", imageUrl);
     }
-    // console.log("imageUrl : ",imageUrl);
 
     const updatedUser = await userModel.updateUser(userId, {
       ...(name && { name }),
@@ -334,7 +383,8 @@ const makePrimaryAddress = async (req, res) => {
 
 const editAddress = async (req, res) => {
   try {
-    const { addressId, street, city, state, country, zip, isPrimary } = req.query;
+    const { addressId, street, city, state, country, zip, isPrimary } =
+      req.query;
     const userId = req.user.id;
     const booleanValue = isPrimary === "true" ? true : false;
     const addressData = { street, city, state, country, postalCode: zip };
@@ -473,7 +523,7 @@ const forgotPassword = async (req, res) => {
       email: user.email,
     });
 
-    const resetURL = `${process.env.FRONTEND_URL}?token=${resetToken}`;
+    const resetURL = `${process.env.FRONTEND_URL}/user/forgetpwd/resetpwd?token=${resetToken}`;
 
     await emailService.sendPasswordResetEmail(email, resetURL);
 
@@ -559,4 +609,6 @@ module.exports = {
   getAllAddresses,
   editAddress,
   deleteAddress,
+  googleLogin,
+  googleCallback,
 };

@@ -12,6 +12,8 @@ const router = express.Router();
 router.route("/signup").post(validationMiddleware.validateSignup, User.signup);
 router.route("/login").post(validationMiddleware.validateLogin, User.login);
 router.route("/oAuth").post(User.oAuth);
+router.route("/google").get(User.googleLogin);
+router.route("/googlecallback").get(User.googleCallback);
 
 router.route("/userProfileInfo").get(validateToken, User.userProfileInfo);
 router.route("/updateUserProfile").put(validateToken,upload.single('profile'), User.updateUserProfile);
