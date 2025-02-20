@@ -197,7 +197,7 @@ const googleCallback = (req, res, next) => {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         // httpOnly: true,
         // secure: true,
-        sameSite: "None",
+        // sameSite: "None",
       });
 
       return res.redirect(`${process.env.FRONTEND_URL}`);
