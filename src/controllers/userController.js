@@ -160,6 +160,8 @@ const googleLogin = passport.authenticate("google", {
 });
 
 const googleCallback = (req, res, next) => {
+  console.log("callback");
+  
   passport.authenticate("google", { failureRedirect: `${process.env.FRONTEND_URL}/login` }, async (err, user) => {
     if (err || !user) {
       console.log("Google Authentication Failed:", err);
@@ -194,6 +196,7 @@ const googleCallback = (req, res, next) => {
       });
 
       res.cookie("shopflow_session", JSON.stringify({ token }), {
+        httpOnly: false,
         secure:true,
         sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -201,7 +204,7 @@ const googleCallback = (req, res, next) => {
 
       
 
-      return res.redirect(`${process.env.FRONTEND_URL}`);
+      return res.redirect(`http://localhost:3000`);
     } catch (error) {
       console.error("Error Handling Google OAuth:", error);
       return res.redirect(`${process.env.FRONTEND_URL}/login`);
