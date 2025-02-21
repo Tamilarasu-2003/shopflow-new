@@ -9,7 +9,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/user/googlecallback",
+      callbackURL: "https://shopflow-new.onrender.com/user/googlecallback",
     },
     (accessToken, refreshToken, profile, done) => {
       done(null, profile);

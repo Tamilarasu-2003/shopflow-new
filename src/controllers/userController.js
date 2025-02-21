@@ -196,14 +196,15 @@ const googleCallback = (req, res, next) => {
       });
 
       res.cookie("shopflow_session", JSON.stringify({ token }), {
-        httpOnly: false,
-        secure:true,
-        sameSite: "none",
+        // httpOnly: false,
+        // secure:true,
+        // sameSite: "none",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       
 
+      // return res.redirect(`http://localhost:3000`);
       return res.redirect(`${process.env.FRONTEND_URL}`);
     } catch (error) {
       console.error("Error Handling Google OAuth:", error);
