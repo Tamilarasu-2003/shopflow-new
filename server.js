@@ -19,12 +19,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: ["https://shopflow-current.vercel.app/", "http://localhost:3000"], // Allow both production and development
-    credentials: true, // Allow sending cookies
-  })
-);
+app.use(cors());
 
 // app.get("/", (req, res) => {
 //   res.send("hello....!");
