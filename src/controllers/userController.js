@@ -195,9 +195,11 @@ const googleCallback = (req, res, next) => {
 
       res.cookie("shopflow_session", JSON.stringify({ token }), {
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: false,
-        secure: false,
-        sameSite: "lax",
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        // sameSite: "lax",
+        domain:"https://shopflow-current.vercel.app"
       });
 
       return res.redirect(`${process.env.FRONTEND_URL}`);
