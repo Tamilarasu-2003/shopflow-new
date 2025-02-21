@@ -204,7 +204,7 @@ const googleCallback = (req, res, next) => {
 
       
 
-      return res.redirect(`http://localhost:3000`);
+      return res.redirect(`${process.env.FRONTEND_URL}`);
     } catch (error) {
       console.error("Error Handling Google OAuth:", error);
       return res.redirect(`${process.env.FRONTEND_URL}/login`);
